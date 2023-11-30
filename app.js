@@ -9,6 +9,8 @@ const logger = require('./middlewares/logger');
 const { error404, error500 } = require('./middlewares/errors');
 const mongoose = require('mongoose');
 const path = require('path');
+const helmet = require('helmet');
+const cors = require('cors');
 require('dotenv').config();
 
 
@@ -36,6 +38,14 @@ app.use(express.urlencoded({ extended: false }));
 
 // Logger Middleware
 app.use(logger);
+
+
+// Helmet Middleware
+app.use(helmet());
+
+
+// Cors Middleware
+app.use(cors());
 
 
 // View Engine
