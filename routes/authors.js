@@ -17,7 +17,16 @@ const { verifyTokenIsAdmin } = require('../middlewares/verifyToken');
 
 router.get('/authors', asyncHandler(
     async(req, res) =>{
-        const authors = await Author.find().sort({name: 1}).select(" -__v");
+        const { pageNumber } = req.query;
+        const pageSize = 1;
+        const skip = (pageNumber - 1) * pageSize
+
+        const authors = await Author.find()
+        .skip(skip)
+        .limit(pageSize)
+        .sort({name: 1})
+        .select(" -__v");
+
         res.status(200).json({
             status: 'success',
             data: {authors}

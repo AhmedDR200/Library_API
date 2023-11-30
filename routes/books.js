@@ -18,11 +18,42 @@ const { verifyTokenIsAdmin } = require('../middlewares/verifyToken');
 
 router.get('/books', asyncHandler(
     async(req, res) =>{
-        const books = await Book
-        .find()
-        .populate("author", ["_id", "name"])
-        .sort({title: 1})
-        .select(" -__v");
+        // Comparioson Query Operators
+        // eq (equal)
+        // ne (not equal)
+        // gt (greater than)
+        // gte (greater than or equal to)
+        // lt (less than)
+        // lte (less than or equal to)
+        // in  
+        // nin (not in)
+
+        const { minPrice , maxPrice } = req.query;
+        const { minRate , maxRate } = req.query;
+
+        let books;
+
+        if(minPrice && maxPrice){
+            books = await Book
+            .find({price: {$gte: minPrice , $lte: maxPrice}})
+            .populate("author", ["_id", "name"])
+            .sort({title: 1})
+            .select(" -__v");
+        }
+        else if(minRate && maxRate){
+            books = await Book
+            .find({rating: {$gte: minRate , $lte: maxRate}})
+            .populate("author", ["_id", "name"])
+            .sort({title: 1})
+            .select(" -__v");
+        }
+        else{
+            books = await Book
+            .find()
+            .populate("author", ["_id", "name"])
+            .sort({title: 1})
+            .select(" -__v");
+        }
 
         res.status(200).json({
             status: 'success',
