@@ -3,6 +3,7 @@ const booksRouter = require('./routes/books');
 const authorsRouter = require('./routes/authors');
 const authPath = require('./routes/auth');
 const usersRouter = require('./routes/users');
+const passwordRouter = require('./routes/password');
 const logger = require('./middlewares/logger');
 const { error404, error500 } = require('./middlewares/errors');
 const mongoose = require('mongoose');
@@ -22,14 +23,23 @@ const hostname = 'localhost';
 // JSON Middleware
 app.use(express.json());
 
+// Url Encoded Middleware
+app.use(express.urlencoded({ extended: false }));
+
+
 // Logger Middleware
 app.use(logger);
+
+// View Engine
+app.set('view engine', 'ejs');
+
 
 // Routes
 app.use('/', booksRouter);
 app.use('/', authorsRouter);
 app.use('/', authPath);
 app.use('/', usersRouter);
+app.use('/', passwordRouter);
 
 // Error middleware
 app.use(error404);
