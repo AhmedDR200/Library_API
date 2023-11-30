@@ -2,6 +2,7 @@ const asyncHandler = require('express-async-handler');
 const { User } = require('../models/users');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
 
 
 module.exports.getForgotPassword = asyncHandler((req, res, next) => {
@@ -22,10 +23,87 @@ module.exports.sendForgotPassword = asyncHandler(async(req, res, next) => {
 
     const resetLink = `http://localhost:5000/reset-password/${user._id}/${token}`;
 
-    res.json({
-        message: 'Reset link sent to your email',
-        data: {resetLink}
-    })
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USERNAME,
+            pass: process.env.EMAIL_PASSWORD,
+        },
+    });
+
+    const mailOptions = {
+        from: process.env.EMAIL_USERNAME,
+        to: user.email,
+        subject: 'Reset your password',
+        html: ` <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                <meta charset="UTF-8">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Password Reset</title>
+                <style>
+                    body {
+                        font-family: 'Arial', sans-serif;
+                        line-height: 1.6;
+                        background-color: #f4f4f4;
+                        margin: 0;
+                        padding: 0;
+                        text-align: center;
+                    }
+            
+                    .container {
+                        max-width: 600px;
+                        margin: 20px auto;
+                        padding: 20px;
+                        background-color: #ffffff;
+                        border-radius: 8px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                    }
+            
+                    h1 {
+                        color: #333333;
+                    }
+            
+                    p {
+                        color: #555555;
+                    }
+            
+                    a {
+                        color: #007BFF;
+                        text-decoration: none;
+                    }
+            
+                    a:hover {
+                        text-decoration: underline;
+                    }
+                </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Password Reset</h1>
+                <p>Hello,</p>
+                <p>We received a request to reset your password. Click the link below to proceed:</p>
+                <p><a href="${resetLink}">${resetLink}</a></p>
+                <p>If you didn't request a password reset, please ignore this email.</p>
+                <p>Thank you!</p>
+            </div>
+        </body>
+        </html>
+        `
+    };
+
+    transporter.sendMail(mailOptions, (err, info) => {
+        if (err) {
+            console.error('Error sending email:', err);
+            // Handle the error, e.g., return an error response to the client.
+            return res.status(500).json({ error: 'Error sending email' });
+        } else {
+            console.log('Email sent: ' + info.response);
+            // Optionally, you can send a success response to the client.
+            res.render('link-send');
+        }
+    });
 });
 
 
